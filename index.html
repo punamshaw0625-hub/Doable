@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Doable — Task Manager</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="js" href = "scrpt.js"
+  <!-- Fraunces: quirky optical-size serif for headings; Epilogue: geometric sans for body -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Epilogue:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ░░ HEADER ░░ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-mark" aria-hidden="true">✦</span>
+        <span class="logo-text">Doable</span>
+      </div>
+      <button class="btn-new" id="openModalBtn" aria-label="Add new task">
+        <span class="btn-new__icon" aria-hidden="true">+</span>
+        <span>New Task</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ░░ MAIN LAYOUT ░░ -->
+  <div class="layout">
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar" id="sidebar" role="complementary" aria-label="Filters and stats">
+
+      <section class="stats-panel" aria-label="Task statistics">
+        <h2 class="sidebar-title">Overview</h2>
+        <div class="stats-grid">
+          <div class="stat-chip stat-chip--total">
+            <span class="stat-num" id="statTotal">0</span>
+            <span class="stat-label">Total</span>
+          </div>
+          <div class="stat-chip stat-chip--pending">
+            <span class="stat-num" id="statPending">0</span>
+            <span class="stat-label">Pending</span>
+          </div>
+          <div class="stat-chip stat-chip--done">
+            <span class="stat-num" id="statDone">0</span>
+            <span class="stat-label">Done</span>
+          </div>
+        </div>
+        <div class="progress-track"
+             role="progressbar"
+             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+             aria-label="Overall completion progress"
+             id="progressBar">
+          <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+        <span class="progress-label" id="progressLabel">0% complete</span>
+      </section>
+
+      <section class="filter-panel" aria-label="Filter tasks">
+        <h2 class="sidebar-title">Filter</h2>
+        <nav class="filter-nav">
+          <button class="filter-btn active" data-filter="all" aria-current="true">
+            <span class="ficon" aria-hidden="true">◈</span> All Tasks
+          </button>
+          <button class="filter-btn" data-filter="pending">
+            <span class="ficon" aria-hidden="true">◌</span> Pending
+          </button>
+          <button class="filter-btn" data-filter="completed">
+            <span class="ficon" aria-hidden="true">◉</span> Completed
+          </button>
+        </nav>
+      </section>
+
+      <section class="sort-panel" aria-label="Sort tasks">
+        <h2 class="sidebar-title">Sort by</h2>
+        <div class="sort-group" role="group" aria-label="Sort options">
+          <button class="sort-btn active" data-sort="created"  aria-pressed="true">Date Added</button>
+          <button class="sort-btn"        data-sort="duedate"  aria-pressed="false">Due Date</button>
+          <button class="sort-btn"        data-sort="priority" aria-pressed="false">Priority</button>
+          <button class="sort-btn"        data-sort="alpha"    aria-pressed="false">A → Z</button>
+        </div>
+      </section>
+
+      <section class="labels-panel" aria-label="Filter by label">
+        <h2 class="sidebar-title">Labels</h2>
+        <div class="labels-list" id="labelsList">
+          <span class="no-labels-hint">No labels yet</span>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Sidebar overlay (mobile) -->
+    <div class="sidebar-overlay hidden" id="sidebarOverlay" aria-hidden="true"></div>
+
+    <!-- ── Task Board ── -->
+    <main class="board" id="mainContent" role="main">
+      <div class="board-header">
+        <div>
+          <h1 class="board-title" id="boardTitle">All Tasks</h1>
+          <p class="board-subtitle" id="boardSubtitle">Everything in one place</p>
+        </div>
+        <!-- Mobile add button -->
+        <button class="btn-new btn-new--icon" id="openModalBtnMobile" aria-label="Add new task">
+          <span aria-hidden="true">+</span>
+        </button>
+      </div>
+
+      <!-- Task grid — populated by JS -->
+      <div class="task-grid" id="taskGrid" role="list" aria-label="Task list" aria-live="polite"></div>
+
+      <!-- Empty state -->
+      <div class="empty-state hidden" id="emptyState" aria-label="No tasks available">
+        <div class="empty-illustration" aria-hidden="true">
+          <svg width="110" height="110" viewBox="0 0 110 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="18" y="26" width="74" height="66" rx="8" fill="#f5f2ed" stroke="#ddd8cf" stroke-width="1.5"/>
+            <line x1="32" y1="48" x2="78" y2="48" stroke="#ddd8cf" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="32" y1="61" x2="70" y2="61" stroke="#ddd8cf" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="32" y1="74" x2="60" y2="74" stroke="#ddd8cf" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="82" cy="30" r="14" fill="#e8523a" opacity="0.14"/>
+            <text x="82" y="36" text-anchor="middle" font-size="18" fill="#e8523a" font-family="sans-serif">+</text>
+          </svg>
+        </div>
+        <h2 class="empty-title" id="emptyTitle">Nothing here yet</h2>
+        <p class="empty-body" id="emptyBody">Add your first task and start making progress.<br/>One step at a time.</p>
+        <button class="btn-new" id="emptyAddBtn">
+          <span class="btn-new__icon" aria-hidden="true">+</span>
+          <span>Create a Task</span>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <!-- ░░ MODAL — ADD / EDIT TASK ░░ -->
+  <div class="modal-overlay hidden" id="modalOverlay"
+       role="dialog" aria-modal="true" aria-labelledby="modalHeading">
+    <div class="modal" role="document">
+      <div class="modal-header">
+        <h2 class="modal-heading" id="modalHeading">New Task</h2>
+        <button class="modal-close" id="closeModalBtn" aria-label="Close dialog">✕</button>
+      </div>
+
+      <form class="modal-form" id="taskForm" novalidate autocomplete="off">
+        <!-- Holds task ID when in edit mode; empty when adding -->
+        <input type="hidden" id="taskId" />
+
+        <div class="field">
+          <label class="field-label" for="taskTitle">
+            Title <span class="req-star" aria-hidden="true">*</span>
+          </label>
+          <input
+            class="field-input"
+            type="text" id="taskTitle"
+            placeholder="What needs to be done?"
+            maxlength="140"
+            required aria-required="true"
+            aria-describedby="titleError"
+          />
+          <span class="field-error hidden" id="titleError" role="alert">
+            Please enter a task title.
+          </span>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label" for="taskDue">Due Date</label>
+            <input class="field-input" type="date" id="taskDue" />
+          </div>
+          <div class="field">
+            <label class="field-label" for="taskPriority">Priority</label>
+            <select class="field-input field-select" id="taskPriority">
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="taskLabel">Label / Category</label>
+          <input
+            class="field-input"
+            type="text" id="taskLabel"
+            placeholder="e.g. Work, Personal, Health…"
+            maxlength="32"
+            list="labelSuggestions"
+          />
+          <datalist id="labelSuggestions">
+            <option value="Work"/><option value="Personal"/><option value="Health"/>
+            <option value="Finance"/><option value="Learning"/><option value="Home"/>
+          </datalist>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="cancelModalBtn">Cancel</button>
+          <button type="submit" class="btn-primary" id="saveTaskBtn">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ░░ TOAST NOTIFICATION ░░ -->
+  <div class="toast hidden" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ░░ MOBILE SIDEBAR TOGGLE ░░ -->
+  <button class="sidebar-toggle" id="sidebarToggle"
+          aria-label="Toggle sidebar" aria-expanded="false" aria-controls="sidebar">
+    <span class="st-bar"></span>
+    <span class="st-bar"></span>
+    <span class="st-bar"></span>
+  </button>
+
+  <script src="script.js"></script>
+</body>
+</html>
